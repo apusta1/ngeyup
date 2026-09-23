@@ -40,9 +40,8 @@
                 <strong>Cara Bermain:</strong><br>
                 1. Saat <b>mendung</b> ☁️, kamu akan bermain bola di tengah lapangan.<br>
                 2. Saat <b>matahari terik</b> ☀️, cepat cari tempat teduh!<br>
-                3. Sentuh panah untuk pergi ke <b>pohon</b> 🌳 (kiri) atau ambil <b>payung</b> ☂️ (kanan). Butuh 5 langkah untuk sampai!<br>
-                4. Pohon akan menambah darahmu ❤️. Payung akan menahan darahmu agar tidak turun.<br>
-                5. Bertahanlah selama 5 siklus matahari terik!
+                3. Klik tombol panah untuk pergi ke <b>pohon</b> 🌳 atau ambil <b>payung</b> ☂️.<br>
+                4. Bertahanlah selama 5 siklus matahari terik!
             </p>
             <div class="flex flex-col gap-3">
                 <button onclick="bacakanAturan()" class="w-full bg-yellow-400 active:bg-yellow-500 text-yellow-900 text-xl font-bold py-3 rounded-2xl shadow-lg border-b-4 border-yellow-600">
@@ -128,7 +127,7 @@
         // --- Konstanta & Variabel Game ---
         const MAX_HP = 100;
         let hp = MAX_HP;
-        let position = 5; // Track posisi: 0 (Pohon), 5 (Tengah), 10 (Payung)
+        let position = 7; // Track posisi: 0 (Pohon), 7 (Inisial), 10 (Payung)
         let isSunny = false;
         let cycleCount = 0;
         let gameLoopId, weatherTimerId;
