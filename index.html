@@ -3,521 +3,366 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Awas Matahari Terik!</title>
+    <title>Petualangan Mencari Teduh</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&display=swap');
-
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap');
+        
         body {
-            font-family: 'Baloo 2', cursive;
-            touch-action: none;
-            user-select: none;
-            -webkit-user-select: none;
-            -webkit-touch-callout: none;
-            overflow: hidden;
-            background-color: #0f172a; /* Dark background outside game */
-        }
-
-        .game-container {
-            max-width: 480px;
-            margin: 0 auto;
-            height: 100vh;
-            position: relative;
+            font-family: 'Fredoka', sans-serif;
+            touch-action: manipulation; /* Mencegah zoom saat double tap */
             background-color: #87CEEB;
-            transition: background-color 1s ease;
-            display: flex;
-            flex-direction: column;
             overflow: hidden;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            transition: background-color 1s ease;
         }
 
-        .sky-mendung { background-color: #94a3b8; } /* Grayish blue */
-        .sky-terik { background-color: #fcd34d; } /* Bright yellow/orange */
-
-        .ground {
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            height: 35%;
-            background: linear-gradient(to bottom, #4ade80, #16a34a);
-            border-top: 4px solid #15803d;
-            border-radius: 20% 20% 0 0 / 10px 10px 0 0;
-            z-index: 10;
-        }
-
-        .prop {
-            position: absolute;
-            bottom: 30%;
-            transform: translateX(-50%);
-            z-index: 15;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-
-        .tree { 
-            font-size: 7rem; 
-            left: 10%; 
-            bottom: 25%;
-            z-index: 25; /* Tree stays in front to cover player */
-        }
+        .bg-cloudy { background-color: #9CA3AF !important; }
+        .bg-sunny { background-color: #87CEEB !important; }
+        .sun-rays { filter: drop-shadow(0 0 20px #FBBF24); }
         
-        .umbrella-item {
-            font-size: 4rem;
-            left: 90%;
-            transition: opacity 0.3s;
-        }
-
-        .player-container {
-            position: absolute;
-            bottom: 28%;
-            transform: translateX(-50%);
-            transition: left 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-            z-index: 20;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .player-emoji {
-            font-size: 4.5rem;
-            filter: drop-shadow(0px 4px 2px rgba(0,0,0,0.4));
-            transition: transform 0.2s;
-        }
-
-        .ball-emoji {
-            font-size: 2rem;
-            position: absolute;
-            bottom: -5px;
-            right: -15px;
-            animation: bounce-ball 0.5s infinite alternate ease-in-out;
-            filter: drop-shadow(0px 2px 2px rgba(0,0,0,0.4));
-        }
-
-        .held-umbrella {
-            font-size: 4rem;
-            position: absolute;
-            top: -40px;
-            left: -10px;
-            z-index: 21;
-            filter: drop-shadow(0px 4px 2px rgba(0,0,0,0.4));
-        }
-
-        @keyframes bounce-ball {
-            0% { transform: translateY(0); }
-            100% { transform: translateY(-15px) translateX(10px) rotate(45deg); }
-        }
+        /* Animasi Karakter */
+        .character { transition: left 0.3s ease-out; }
+        .bounce { animation: bounce 0.5s infinite alternate; }
         
-        .player-bounce {
-            animation: bounce-player 0.5s infinite alternate ease-in-out;
-        }
-        
-        @keyframes bounce-player {
-            0% { transform: translateY(0); }
-            100% { transform: translateY(-5px); }
-        }
-
-        .weather-icon {
-            position: absolute;
-            top: 25%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 9rem;
-            transition: all 0.8s ease;
-            opacity: 0.9;
-        }
-        
-        .sun-spin { animation: spin 10s linear infinite; }
-        @keyframes spin { 100% { transform: translate(-50%, -50%) rotate(360deg); } }
-        
-        .cloud-bob { animation: bob 3s ease-in-out infinite alternate; }
-        @keyframes bob { 100% { transform: translate(-50%, -60%); } }
-
-        .health-fill { transition: width 0.1s linear, background-color 0.3s ease; }
-        
-        .modal-overlay { background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); }
-        
-        .controls-container {
-            transition: transform 0.4s ease, opacity 0.4s ease;
-        }
-        
-        .controls-hidden {
-            transform: translateY(100px);
-            opacity: 0;
-            pointer-events: none;
+        @keyframes bounce {
+            from { transform: translateY(0); }
+            to { transform: translateY(-10px); }
         }
     </style>
 </head>
-<body class="text-gray-800">
+<body class="bg-sunny h-screen w-screen flex flex-col items-center justify-center relative select-none">
 
-<div id="gameContainer" class="game-container sky-mendung">
-    
-    <div class="absolute top-0 left-0 w-full p-4 z-40 flex flex-col gap-2">
-        <div class="bg-white/95 backdrop-blur rounded-2xl p-3 shadow-lg border-2 border-white/50">
-            <div class="flex justify-between items-center mb-1 font-bold">
-                <span class="text-lg">Kesehatan ❤️</span>
-                <span id="healthText" class="text-lg">100%</span>
-            </div>
-            <div class="w-full h-5 bg-gray-300 rounded-full overflow-hidden border-2 border-gray-400">
-                <div id="healthBar" class="health-fill h-full bg-green-500 w-full"></div>
-            </div>
-        </div>
-        
-        <div class="flex justify-between font-bold">
-            <div class="bg-white/95 rounded-xl px-4 py-2 shadow-md border-b-4 border-gray-200">
-                Siklus Terik: <span id="cycleText" class="text-blue-600 text-lg">0 / 5</span>
-            </div>
-            <div id="weatherBadge" class="bg-gray-200 text-gray-700 rounded-xl px-4 py-2 shadow-md transition-colors border-b-4 border-gray-300">
-                ☁️ Mendung
-            </div>
-        </div>
-    </div>
-
-    <div id="weatherIcon" class="weather-icon cloud-bob">☁️</div>
-
-    <div class="ground"></div>
-    <div class="prop tree">🌳</div>
-    <div id="groundUmbrella" class="prop umbrella-item hidden">🌂</div>
-    
-    <div id="playerContainer" class="player-container" style="left: 50%;">
-        <div id="heldUmbrella" class="held-umbrella hidden">☂️</div>
-        <div id="playerEmoji" class="player-emoji player-bounce">🧍</div>
-        <div id="ballEmoji" class="ball-emoji">⚽</div>
-    </div>
-
-    <div id="controlsContainer" class="absolute bottom-6 left-0 w-full px-4 flex justify-between z-40 controls-hidden">
-        <button id="btnLeft" class="bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white font-extrabold py-5 px-8 rounded-2xl shadow-[0_6px_0_#1e3a8a] active:shadow-[0_0px_0_#1e3a8a] active:translate-y-[6px] transition-all text-xl w-[45%] flex justify-center items-center gap-2">
-            <span class="text-2xl">⬅️</span> Kiri
-        </button>
-        <button id="btnRight" class="bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white font-extrabold py-5 px-8 rounded-2xl shadow-[0_6px_0_#1e3a8a] active:shadow-[0_0px_0_#1e3a8a] active:translate-y-[6px] transition-all text-xl w-[45%] flex justify-center items-center gap-2">
-            Kanan <span class="text-2xl">➡️</span>
-        </button>
-    </div>
-
-    <!-- Start Modal -->
-    <div id="startModal" class="modal-overlay absolute inset-0 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl transform transition-all text-center border-4 border-yellow-400">
-            <h1 class="text-3xl font-extrabold text-orange-500 mb-2">Awas Terik! ☀️</h1>
-            <p class="text-gray-700 font-semibold mb-4 text-sm bg-orange-50 p-3 rounded-xl border border-orange-200">
-                Bermain bola memang seru, tapi awas matahari terik!
+    <!-- Pop-up Menu Awal -->
+    <div id="start-screen" class="absolute inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-3xl p-6 w-full max-w-sm text-center shadow-2xl border-4 border-blue-400">
+            <h1 class="text-3xl font-bold text-blue-600 mb-4">Mencari Tempat Teduh! 🏃‍♂️☀️</h1>
+            <p class="text-gray-700 text-lg mb-4 text-left leading-relaxed">
+                <strong>Cara Bermain:</strong><br>
+                1. Saat <b>mendung</b> ☁️, kamu akan bermain bola di tengah lapangan.<br>
+                2. Saat <b>matahari terik</b> ☀️, cepat cari tempat teduh!<br>
+                3. Sentuh panah untuk pergi ke <b>pohon</b> 🌳 (kiri) atau ambil <b>payung</b> ☂️ (kanan). Butuh 5 langkah untuk sampai!<br>
+                4. Pohon akan menambah darahmu ❤️. Payung akan menahan darahmu agar tidak turun.<br>
+                5. Bertahanlah selama 5 siklus matahari terik!
             </p>
-            <div class="text-left text-sm text-gray-800 space-y-3 mb-6 bg-blue-50 p-4 rounded-xl border border-blue-200">
-                <p>☁️ <b>Saat Mendung:</b> Asyik main bola di tengah lapangan!</p>
-                <p>☀️ <b>Saat Terik:</b> Cepat cari tempat teduh!</p>
-                <ul class="list-disc pl-5 font-semibold text-blue-900">
-                    <li>Klik ⬅️ untuk berteduh di Pohon Besar 🌳</li>
-                    <li>Klik ➡️ untuk ambil Payung 🌂</li>
-                </ul>
-                <p>Bertahan <b>5 siklus terik</b> dengan kesehatan > 50% untuk menang!</p>
+            <div class="flex flex-col gap-3">
+                <button onclick="bacakanAturan()" class="w-full bg-yellow-400 active:bg-yellow-500 text-yellow-900 text-xl font-bold py-3 rounded-2xl shadow-lg border-b-4 border-yellow-600">
+                    🔊 Dengarkan Aturan
+                </button>
+                <button onclick="startGame()" class="w-full bg-green-500 active:bg-green-600 text-white text-xl font-bold py-3 rounded-2xl shadow-lg border-b-4 border-green-700">
+                    ▶️ Mulai Bermain
+                </button>
             </div>
-            <button id="btnStart" class="w-full bg-green-500 hover:bg-green-600 text-white font-extrabold py-4 px-6 rounded-xl shadow-[0_6px_0_#166534] active:shadow-none active:translate-y-1 text-2xl transition-all">
-                Mulai Main! ⚽
-            </button>
         </div>
     </div>
 
-    <div id="endModal" class="modal-overlay absolute inset-0 z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl transform transition-all text-center border-4">
-            <div id="endEmoji" class="text-7xl mb-2 animate-bounce">🏆</div>
-            <h1 id="endTitle" class="text-4xl font-extrabold mb-2"></h1>
-            <p id="endDesc" class="text-gray-700 font-bold mb-6 text-lg"></p>
+    <!-- UI Game -->
+    <div id="game-ui" class="hidden w-full h-full flex flex-col justify-between max-w-md mx-auto relative">
+        
+        <!-- Header: Nyawa & Siklus -->
+        <div class="p-4 bg-white/40 backdrop-blur-md rounded-b-3xl shadow-sm z-10 flex flex-col gap-2">
+            <div class="flex justify-between items-center text-lg font-bold text-gray-800">
+                <span>Nyawa:</span>
+                <span>Matahari Terik: <span id="cycle-count">0</span>/5</span>
+            </div>
+            <!-- Wadah 20 Hati -->
+            <div id="hearts-container" class="flex flex-wrap gap-1 text-xl justify-start drop-shadow-md">
+                <!-- Hati dirender di JS -->
+            </div>
+        </div>
+
+        <!-- Area Bermain -->
+        <div class="flex-1 relative w-full overflow-hidden">
+            <!-- Matahari / Awan -->
+            <div id="weather-icon" class="absolute top-10 left-1/2 -translate-x-1/2 text-8xl transition-all duration-1000">
+                ☁️
+            </div>
             
-            <div class="flex justify-between text-sm mb-6 bg-gray-100 p-4 rounded-xl border-2 border-gray-200">
-                <div>Kesehatan Sisa:<br><strong id="endHealth" class="text-2xl text-red-500"></strong></div>
-                <div>Siklus Terik:<br><strong id="endCycle" class="text-2xl text-blue-500"></strong></div>
+            <div id="weather-text" class="absolute top-36 w-full text-center text-2xl font-bold text-white drop-shadow-lg opacity-0 transition-opacity duration-500">
+                Mendung... Ayo main bola!
             </div>
 
-            <button id="btnRestart" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-extrabold py-4 px-6 rounded-xl shadow-[0_6px_0_#1e3a8a] active:shadow-none active:translate-y-1 text-2xl transition-all">
-                Main Lagi 🔄
+            <!-- Pohon (Posisi Paling Kiri) -->
+            <div class="absolute bottom-24 left-2 text-7xl z-10">🌳</div>
+            
+            <!-- Bola (Di Tengah, muncul saat mendung) -->
+            <div id="soccer-ball" class="absolute bottom-20 left-1/2 -translate-x-1/2 text-4xl z-10 transition-opacity">⚽</div>
+
+            <!-- Payung (Posisi Paling Kanan, Muncul saat terik) -->
+            <div id="umbrella-item" class="absolute bottom-24 right-4 text-6xl z-10 hidden bounce">☂️</div>
+
+            <!-- Karakter Pemain (Bergerak di 10 Titik) -->
+            <!-- 0 (Kiri/Pohon) ... 5 (Tengah) ... 10 (Kanan/Payung) -->
+            <div id="player" class="character absolute bottom-24 text-6xl z-20 bounce" style="left: 50%; transform: translateX(-50%);">
+                👦
+            </div>
+            
+            <!-- Efek Payung Terpakai (Mengikuti Pemain) -->
+            <div id="player-umbrella" class="character absolute bottom-40 text-5xl z-25 hidden" style="left: 50%; transform: translateX(-50%);">
+                ☂️
+            </div>
+        </div>
+
+        <!-- Kontrol Tombol (Disembunyikan saat mendung) -->
+        <div id="controls" class="p-6 pb-12 flex justify-between gap-4 z-20 hidden">
+            <button onclick="movePlayer(-1)" class="w-1/2 bg-blue-500 active:bg-blue-600 text-white text-4xl font-bold py-6 rounded-3xl shadow-lg border-b-8 border-blue-700 flex items-center justify-center">
+                ⬅️
+            </button>
+            <button onclick="movePlayer(1)" class="w-1/2 bg-blue-500 active:bg-blue-600 text-white text-4xl font-bold py-6 rounded-3xl shadow-lg border-b-8 border-blue-700 flex items-center justify-center">
+                ➡️
             </button>
         </div>
     </div>
 
-</div>
+    <!-- Pop-up Akhir (Game Over / Menang) -->
+    <div id="end-screen" class="hidden absolute inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-3xl p-8 w-full max-w-sm text-center shadow-2xl">
+            <h1 id="end-title" class="text-4xl font-bold mb-4"></h1>
+            <p id="end-desc" class="text-xl text-gray-700 mb-8"></p>
+            <button onclick="showStartMenu()" class="w-full bg-blue-500 active:bg-blue-600 text-white text-2xl font-bold py-4 rounded-2xl shadow-lg border-b-4 border-blue-700">
+                🔄 Main Lagi
+            </button>
+        </div>
+    </div>
 
-<script>
-    const container = document.getElementById('gameContainer');
-    const playerContainer = document.getElementById('playerContainer');
-    const playerEmoji = document.getElementById('playerEmoji');
-    const ballEmoji = document.getElementById('ballEmoji');
-    const heldUmbrella = document.getElementById('heldUmbrella');
-    const groundUmbrella = document.getElementById('groundUmbrella');
-    
-    const healthBar = document.getElementById('healthBar');
-    const healthText = document.getElementById('healthText');
-    const cycleText = document.getElementById('cycleText');
-    const weatherBadge = document.getElementById('weatherBadge');
-    const weatherIcon = document.getElementById('weatherIcon');
-    const controlsContainer = document.getElementById('controlsContainer');
-    
-    const startModal = document.getElementById('startModal');
-    const endModal = document.getElementById('endModal');
-    const endTitle = document.getElementById('endTitle');
-    const endDesc = document.getElementById('endDesc');
-    const endEmoji = document.getElementById('endEmoji');
-    const endHealth = document.getElementById('endHealth');
-    const endCycle = document.getElementById('endCycle');
-    
-    const btnLeft = document.getElementById('btnLeft');
-    const btnRight = document.getElementById('btnRight');
-    const btnStart = document.getElementById('btnStart');
-    const btnRestart = document.getElementById('btnRestart');
+    <script>
+        // --- Konstanta & Variabel Game ---
+        const MAX_HP = 100;
+        let hp = MAX_HP;
+        let position = 5; // Track posisi: 0 (Pohon), 5 (Tengah), 10 (Payung)
+        let isSunny = false;
+        let cycleCount = 0;
+        let gameLoopId, weatherTimerId;
+        
+        // Element DOM
+        const body = document.body;
+        const player = document.getElementById('player');
+        const playerUmbrella = document.getElementById('player-umbrella');
+        const weatherIcon = document.getElementById('weather-icon');
+        const weatherText = document.getElementById('weather-text');
+        const controls = document.getElementById('controls');
+        const umbrellaItem = document.getElementById('umbrella-item');
+        const soccerBall = document.getElementById('soccer-ball');
+        const heartsContainer = document.getElementById('hearts-container');
 
-    const POS_TREE = 0;
-    const POS_CENTER = 7;
-    const POS_UMBRELLA = 10;
-    
-    const MAX_CYCLES = 5;
-    const LOOP_INTERVAL_MS = 100;
-    const DRAIN_RATE = 2.5; // Health drops fast in the sun without shade
-    const REGEN_RATE = 0.5; // Health regenerates slowly
-
-    let state = 'INIT'; // INIT, PLAYING, END
-    let health = 100;
-    let cyclesComplete = 0;
-    let weather = 'MENDUNG'; // MENDUNG, TERIK
-    let playerPos = POS_CENTER;
-    let hasUmbrella = false;
-    
-    let gameLoop;
-    let weatherTimeout;
-
-    function initGame() {
-        health = 100;
-        cyclesComplete = 0;
-        weather = 'MENDUNG';
-        playerPos = POS_CENTER;
-        hasUmbrella = false;
-        state = 'PLAYING';
-        
-        updatePlayerVisuals();
-        setWeatherUI();
-        updateUI();
-        
-        startModal.classList.add('hidden');
-        endModal.classList.add('hidden');
-        
-        gameLoop = setInterval(updateLogic, LOOP_INTERVAL_MS);
-        scheduleNextWeather(4000); // Initial mendung for 4 seconds
-    }
-
-    function endGame(isWin, reason) {
-        state = 'END';
-        clearInterval(gameLoop);
-        clearTimeout(weatherTimeout);
-        controlsContainer.classList.add('controls-hidden');
-        
-        endModal.classList.remove('hidden');
-        endHealth.innerText = Math.floor(health) + '%';
-        endCycle.innerText = cyclesComplete + ' / 5';
-        
-        let modalBox = endModal.querySelector('.bg-white');
-        
-        if (isWin) {
-            endEmoji.innerText = '🏆';
-            endTitle.innerText = 'Kamu Hebat!';
-            endTitle.className = 'text-4xl font-extrabold mb-2 text-green-500';
-            endDesc.innerText = 'Selamat! Kamu pintar melindungi diri dari sengatan matahari.';
-            modalBox.className = 'bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl transform transition-all text-center border-4 border-green-500';
-        } else {
-            endEmoji.innerText = '🥵';
-            endTitle.innerText = 'Game Over!';
-            endTitle.className = 'text-4xl font-extrabold mb-2 text-red-500';
-            endDesc.innerText = reason;
-            modalBox.className = 'bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl transform transition-all text-center border-4 border-red-500';
+        // --- Fitur Suara (Text to Speech) ---
+        function speak(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel(); // Hentikan suara sebelumnya
+                const msg = new SpeechSynthesisUtterance(text);
+                msg.lang = 'id-ID'; // Bahasa Indonesia
+                msg.rate = 0.9; // Sedikit diperlambat agar jelas untuk anak
+                window.speechSynthesis.speak(msg);
+            }
         }
-    }
 
-    function scheduleNextWeather(delayMs) {
-        if (state !== 'PLAYING') return;
-        
-        // Random duration between 3.5s and 6s
-        let durationMs = delayMs || Math.floor(Math.random() * (6000 - 3500 + 1) + 3500);
+        function bacakanAturan() {
+            const teksAturan = "Cara Bermain. Saat mendung, kamu akan bermain bola di tengah. Saat matahari terik, cepat cari tempat teduh! Tekan panah untuk pergi ke pohon di kiri, atau ambil payung di kanan. Pohon akan menambah darahmu, payung akan menahan darahmu agar tidak turun. Bertahanlah selama 5 siklus matahari terik!";
+            speak(teksAturan);
+        }
 
-        weatherTimeout = setTimeout(() => {
-            toggleWeather();
-        }, durationMs);
-    }
-
-    function toggleWeather() {
-        if (weather === 'MENDUNG') {
-            weather = 'TERIK';
-        } else {
-            weather = 'MENDUNG';
-            cyclesComplete++;
+        // --- Render Health Bar (20 Hati) ---
+        function updateHearts() {
+            // 20 hati maksimal. Tiap hati bernilai 5 HP.
+            const totalHearts = 20;
+            const fullHearts = Math.ceil(hp / 5);
+            const emptyHearts = totalHearts - fullHearts;
             
-            // Re-center player when it gets cloudy
-            playerPos = POS_CENTER;
-            hasUmbrella = false; 
+            let html = '';
+            for(let i = 0; i < fullHearts; i++) html += '❤️';
+            for(let i = 0; i < emptyHearts; i++) html += '🤍';
             
-            if (cyclesComplete >= MAX_CYCLES) {
-                if (health > 50) {
-                    endGame(true);
-                } else {
-                    endGame(false, 'Kamu bertahan sampai akhir, tapi kurang sehat (Kesehatan <= 50%). Jangan lupa minum air!');
+            heartsContainer.innerHTML = html;
+        }
+
+        // --- Pergerakan Pemain ---
+        function movePlayer(direction) {
+            if (!isSunny) return; // Hanya bisa bergerak manual saat terik
+            
+            position += direction;
+            if (position < 0) position = 0;
+            if (position > 10) position = 10;
+            
+            updatePlayerVisuals();
+        }
+
+        function updatePlayerVisuals() {
+            // Menghitung persentase posisi di layar (10% hingga 90% agar tidak terpotong)
+            const percentage = 10 + (position * 8); 
+            player.style.left = percentage + '%';
+            player.style.transform = 'translateX(-50%)';
+            
+            // Logika Payung
+            if (position === 10 && isSunny) {
+                // Ambil Payung
+                umbrellaItem.classList.add('hidden');
+                playerUmbrella.style.left = percentage + '%';
+                playerUmbrella.classList.remove('hidden');
+            } else {
+                playerUmbrella.classList.add('hidden');
+                if (isSunny && position !== 10) {
+                    umbrellaItem.classList.remove('hidden'); // Payung ditaruh lagi di kanan
                 }
-                updateUI();
-                updatePlayerVisuals();
+            }
+            
+            // Tampilan Keringatan
+            if (isSunny && position > 0 && position < 10) {
+                player.innerText = '🥵';
+            } else {
+                player.innerText = '👦';
+            }
+        }
+
+        function forceCenterPlayer() {
+            position = 5;
+            updatePlayerVisuals();
+        }
+
+        // --- Cuaca & Logic ---
+        function setWeather(sunny) {
+            isSunny = sunny;
+            if (isSunny) {
+                cycleCount++;
+                document.getElementById('cycle-count').innerText = cycleCount;
+                
+                body.classList.remove('bg-cloudy');
+                body.classList.add('bg-sunny');
+                weatherIcon.innerText = '☀️';
+                weatherIcon.classList.add('sun-rays');
+                
+                weatherText.innerText = "Matahari Terik! Cari tempat teduh!";
+                speak("Matahari terik! Cepat cari tempat teduh!");
+                weatherText.style.opacity = 1;
+                
+                soccerBall.classList.add('opacity-0');
+                controls.classList.remove('hidden');
+                umbrellaItem.classList.remove('hidden');
+                
+                setTimeout(() => { weatherText.style.opacity = 0; }, 3000);
+            } else {
+                body.classList.add('bg-cloudy');
+                body.classList.remove('bg-sunny');
+                weatherIcon.innerText = '☁️';
+                weatherIcon.classList.remove('sun-rays');
+                
+                weatherText.innerText = "Mendung... Ayo main bola di tengah!";
+                speak("Mendung! Ayo main bola di tengah!");
+                weatherText.style.opacity = 1;
+                
+                soccerBall.classList.remove('opacity-0');
+                controls.classList.add('hidden');
+                umbrellaItem.classList.add('hidden');
+                playerUmbrella.classList.add('hidden');
+                
+                forceCenterPlayer();
+                setTimeout(() => { weatherText.style.opacity = 0; }, 3000);
+            }
+        }
+
+        function toggleWeather() {
+            if (cycleCount >= 5 && isSunny) {
+                endGame(true);
                 return;
             }
+            setWeather(!isSunny);
+            
+            // Randomize durasi cuaca (Mendung: 4-6 detik, Terik: 6-8 detik)
+            const duration = isSunny ? (Math.random() * 2000 + 6000) : (Math.random() * 2000 + 4000);
+            weatherTimerId = setTimeout(toggleWeather, duration);
         }
-        
-        setWeatherUI();
-        updatePlayerVisuals();
-        updateUI();
-        scheduleNextWeather();
-    }
 
-    function setWeatherUI() {
-        if (weather === 'TERIK') {
-            container.classList.remove('sky-mendung');
-            container.classList.add('sky-terik');
-            
-            weatherBadge.innerHTML = '☀️ Terik Panas!';
-            weatherBadge.className = 'bg-orange-100 text-orange-700 font-extrabold border-b-4 border-orange-400 rounded-xl px-4 py-2 shadow-md transition-colors';
-            
-            weatherIcon.innerText = '☀️';
-            weatherIcon.className = 'weather-icon sun-spin drop-shadow-[0_0_15px_rgba(255,255,0,0.8)] text-yellow-300';
-            
-            controlsContainer.classList.remove('controls-hidden');
-            ballEmoji.classList.add('hidden'); // Hide ball
-            playerEmoji.classList.remove('player-bounce');
-            
-            if (!hasUmbrella) {
-                groundUmbrella.classList.remove('hidden');
+        function gameLoop() {
+            if (hp <= 0) {
+                endGame(false);
+                return;
             }
-            
-        } else {
-            container.classList.remove('sky-terik');
-            container.classList.add('sky-mendung');
-            
-            weatherBadge.innerHTML = '☁️ Mendung Teduh';
-            weatherBadge.className = 'bg-gray-100 text-gray-700 font-extrabold border-b-4 border-gray-300 rounded-xl px-4 py-2 shadow-md transition-colors';
-            
-            weatherIcon.innerText = '☁️';
-            weatherIcon.className = 'weather-icon cloud-bob drop-shadow-lg text-white opacity-90';
-            
-            controlsContainer.classList.add('controls-hidden');
-            ballEmoji.classList.remove('hidden'); // Show ball
-            playerEmoji.classList.add('player-bounce');
-            groundUmbrella.classList.add('hidden');
-        }
-    }
 
-    function updatePlayerVisuals() {
-        // Calculate physical CSS left position (0->10 maps to 10%->90%)
-        const percentage = 10 + (playerPos * 8);
-        playerContainer.style.left = `${percentage}%`;
-
-        // Check Umbrella Logic
-        if (weather === 'TERIK') {
-            if (playerPos === POS_UMBRELLA && !hasUmbrella) {
-                hasUmbrella = true;
-                groundUmbrella.classList.add('hidden'); // Picked up
-            }
-        }
-
-        // Apply Held Umbrella
-        if (hasUmbrella) {
-            heldUmbrella.classList.remove('hidden');
-        } else {
-            heldUmbrella.classList.add('hidden');
-        }
-    }
-
-    function updateLogic() {
-        if (state !== 'PLAYING') return;
-
-        let isSafe = (playerPos === POS_TREE) || hasUmbrella;
-
-        if (weather === 'TERIK' && !isSafe) {
-            // Drain health
-            health -= DRAIN_RATE;
-            playerEmoji.innerText = '🥵'; // Sweating emoji
-            playerEmoji.style.transform = 'scale(0.95)';
-        } else {
-            // Recover health ONLY if at tree or mendung (not when using umbrella)
-            if (weather === 'MENDUNG' || playerPos === POS_TREE) {
-                if (health < 100) {
-                    health += REGEN_RATE;
-                    if (health > 100) health = 100;
+            if (isSunny) {
+                if (position === 0) {
+                    // Di bawah pohon (Healing)
+                    hp = Math.min(MAX_HP, hp + 1);
+                } else if (position === 10) {
+                    // Pakai payung (Darah tidak turun, tapi tidak naik)
+                    // Tidak ada perubahan hp
+                } else {
+                    // Terkena panas (Damage)
+                    hp -= 2.5; 
                 }
+            } else {
+                // Mendung, main bola (Healing perlahan)
+                hp = Math.min(MAX_HP, hp + 1);
             }
-            playerEmoji.innerText = '🧍'; // Normal emoji
-            playerEmoji.style.transform = 'scale(1)';
+
+            updateHearts();
         }
 
-        updateUI();
-
-        // Check Lose Condition
-        if (health <= 0) {
-            health = 0;
-            updateUI();
-            endGame(false, 'Kesehatanmu habis karena kepanasan! Selalu cari tempat teduh saat matahari terik.');
-        }
-    }
-
-    function updateUI() {
-        healthText.innerText = Math.max(0, Math.floor(health)) + '%';
-        healthBar.style.width = health + '%';
-
-        if (health > 50) {
-            healthBar.className = 'health-fill h-full bg-green-500 w-full';
-        } else if (health > 25) {
-            healthBar.className = 'health-fill h-full bg-yellow-400 w-full';
-        } else {
-            healthBar.className = 'health-fill h-full bg-red-500 w-full';
+        // --- Kontrol Flow Game ---
+        function showStartMenu() {
+            document.getElementById('end-screen').classList.add('hidden');
+            document.getElementById('start-screen').classList.remove('hidden');
+            document.getElementById('game-ui').classList.add('hidden');
+            window.speechSynthesis.cancel();
         }
 
-        cycleText.innerText = cyclesComplete + ' / ' + MAX_CYCLES;
-    }
-
-    function handleLeft(e) {
-        if(e) e.preventDefault();
-        if (state !== 'PLAYING' || weather !== 'TERIK') return;
-        if (playerPos > POS_TREE) {
-            playerPos--;
-            updatePlayerVisuals();
+        function startGame() {
+            // Reset Variabel
+            hp = MAX_HP;
+            position = 5;
+            cycleCount = 0;
+            isSunny = false;
+            
+            updateHearts();
+            document.getElementById('cycle-count').innerText = cycleCount;
+            
+            // Tampilan UI
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('end-screen').classList.add('hidden');
+            document.getElementById('game-ui').classList.remove('hidden');
+            
+            speak("Permainan Dimulai!");
+            
+            // Mulai loop
+            forceCenterPlayer();
+            setWeather(false); // Mulai dengan mendung
+            
+            clearInterval(gameLoopId);
+            clearTimeout(weatherTimerId);
+            
+            gameLoopId = setInterval(gameLoop, 200); // Update hp setiap 0.2 detik
+            weatherTimerId = setTimeout(toggleWeather, 5000); // Siklus pertama 5 detik
         }
-    }
 
-    function handleRight(e) {
-        if(e) e.preventDefault();
-        if (state !== 'PLAYING' || weather !== 'TERIK') return;
-        if (playerPos < POS_UMBRELLA) {
-            playerPos++;
-            updatePlayerVisuals();
+        function endGame(isWin) {
+            clearInterval(gameLoopId);
+            clearTimeout(weatherTimerId);
+            window.speechSynthesis.cancel();
+            
+            document.getElementById('game-ui').classList.add('hidden');
+            const endScreen = document.getElementById('end-screen');
+            const title = document.getElementById('end-title');
+            const desc = document.getElementById('end-desc');
+            
+            endScreen.classList.remove('hidden');
+            
+            if (isWin) {
+                // Cek syarat win: HP > 50% (Darah > 50)
+                if (hp >= 50) {
+                    title.innerText = "🏆 Kamu Pemenang!";
+                    title.className = "text-4xl font-bold mb-4 text-green-500";
+                    desc.innerText = "Hebat! Kamu berhasil menjaga kesehatanmu dari panasnya matahari!";
+                    speak("Selamat! Kamu berhasil bertahan dari terik matahari dan memenangkan permainan!");
+                } else {
+                    title.innerText = "😅 Bertahan, tapi...";
+                    title.className = "text-4xl font-bold mb-4 text-yellow-500";
+                    desc.innerText = "Kamu selamat dari 5 siklus, tapi darahmu kurang dari setengah. Coba lagi agar lebih sehat!";
+                    speak("Yah, kamu selamat, tapi darahmu kurang dari setengah. Coba lagi yuk supaya lebih sehat!");
+                }
+            } else {
+                title.innerText = "💀 Game Over";
+                title.className = "text-4xl font-bold mb-4 text-red-500";
+                desc.innerText = "Kamu terlalu lama kepanasan! Ingat untuk selalu berteduh ya.";
+                speak("Waduh, kamu kepanasan sampai pingsan. Jangan lupa berteduh ya! Ayo coba lagi!");
+            }
         }
-    }
-
-    // Use touchstart and mousedown for better mobile tap responsiveness
-    btnLeft.addEventListener('touchstart', handleLeft, {passive: false});
-    btnLeft.addEventListener('mousedown', handleLeft);
-    
-    btnRight.addEventListener('touchstart', handleRight, {passive: false});
-    btnRight.addEventListener('mousedown', handleRight);
-
-    function showStartMenu() {
-        // Hide end modal, show start modal
-        endModal.classList.add('hidden');
-        startModal.classList.remove('hidden');
-        
-        // Reset background visuals to initial state
-        health = 100;
-        cyclesComplete = 0;
-        weather = 'MENDUNG';
-        playerPos = POS_CENTER;
-        hasUmbrella = false;
-        
-        setWeatherUI();
-        updatePlayerVisuals();
-        updateUI();
-    }
-
-    btnStart.addEventListener('click', initGame);
-    btnRestart.addEventListener('click', showStartMenu);
-
-    // Prevent context menu (long press) on mobile to keep controls smooth
-    document.addEventListener('contextmenu', event => event.preventDefault());
-
-</script>
+    </script>
 </body>
 </html>
